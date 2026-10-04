@@ -4,113 +4,358 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>El castillo de cristal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Source+Sans+3:wght@400;600&display=swap">
 <style>
-  :root { --oro: #E8A33D; --oro-claro: #FFD27A; --tinta: #140F2B; --papel: #FFF6E8; }
+  :root { --oro: #E8A33D; --oro-claro: #FFD27A; --tinta: #140F2B; --papel: #FFF6E8; --hielo: #BFEFFF; }
   html, body { margin: 0; height: 100%; background: #0d0a1c; overflow: hidden; }
   body { font-family: "Source Sans 3", Arial, sans-serif; color: var(--papel); display: grid; place-items: center; }
-  /* escenario 16:9 que se ajusta al marco de Genially */
-  .escenario { position: relative; width: min(100vw, 177.78vh); aspect-ratio: 16 / 9; overflow: hidden; }
-  .capa { position: absolute; inset: -3%; background-size: cover; background-position: center; will-change: transform; }
-  .capa img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .escenario { position: relative; width: min(100vw, 177.78vh); aspect-ratio: 16 / 9; overflow: hidden; font-size: min(1vw, 1.78vh); }
+  .esc { position: absolute; inset: 0; visibility: hidden; }
+  .esc.activa { visibility: visible; }
+  .capa { position: absolute; inset: -3%; will-change: transform; }
+  .capa img, .fondo { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fondo { position: absolute; inset: 0; }
   canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-  .girasol { position: absolute; transform-origin: 50% 100%; will-change: transform; }
-  .girasol img { width: 100%; display: block; filter: drop-shadow(0 .4vw .6vw rgba(20, 15, 43, .35)); }
-  .portada { position: absolute; left: 7%; top: 13%; max-width: 44%; }
-  .portada h1 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 600; font-size: clamp(28px, 6.2vw, 112px); line-height: .98; margin: 0 0 .35em; text-shadow: 0 .05em .35em rgba(20, 15, 43, .55); }
-  .portada p { font-size: clamp(12px, 1.35vw, 24px); margin: 0 0 1.6em; opacity: .92; text-shadow: 0 1px 8px rgba(20, 15, 43, .6); }
-  .portada p em { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.15em; }
-  .boton { font: 600 clamp(12px, 1.3vw, 22px) "Source Sans 3", Arial, sans-serif; color: var(--tinta); background: linear-gradient(180deg, var(--oro-claro), var(--oro)); border: 0; border-radius: 999px; padding: .75em 1.8em; cursor: pointer; box-shadow: 0 0 0 .18em rgba(255, 210, 122, .25), 0 .5em 1.4em rgba(232, 163, 61, .45); transition: transform .2s; }
-  .boton:hover { transform: translateY(-2px) scale(1.04); }
+  .girasol { position: absolute; transform-origin: 50% 100%; }
+  .girasol img { width: 100%; display: block; filter: drop-shadow(0 .4em .6em rgba(20, 15, 43, .35)); }
+  .velo { position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 40%, transparent 40%, rgba(13, 10, 28, .5)); pointer-events: none; }
+  h1, h2 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 600; margin: 0; text-shadow: 0 .05em .35em rgba(20, 15, 43, .6); }
+  h1 { font-size: 6.4em; line-height: .98; margin-bottom: .3em; }
+  h2 { font-size: 3.4em; line-height: 1.05; margin-bottom: .35em; }
+  p { font-size: 1.5em; line-height: 1.45; margin: 0 0 1.1em; text-shadow: 0 1px 8px rgba(20, 15, 43, .6); }
+  em { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.12em; }
+  .boton { font: 600 1.35em "Source Sans 3", Arial, sans-serif; color: var(--tinta); background: linear-gradient(180deg, var(--oro-claro), var(--oro)); border: 0; border-radius: 999px; padding: .75em 1.7em; cursor: pointer; box-shadow: 0 0 0 .18em rgba(255, 210, 122, .25), 0 .5em 1.4em rgba(232, 163, 61, .45); transition: transform .2s, filter .2s; }
+  .boton:hover { transform: translateY(-2px) scale(1.04); filter: brightness(1.06); }
+  .boton.sec { background: rgba(255, 246, 232, .14); color: var(--papel); box-shadow: inset 0 0 0 .12em rgba(255, 246, 232, .6); backdrop-filter: blur(6px); }
   .boton:focus-visible { outline: 3px solid var(--papel); outline-offset: 3px; }
-  .velo { position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 40%, transparent 40%, rgba(13, 10, 28, .45)); pointer-events: none; }
-  @media (prefers-reduced-motion: reduce) { .girasol { animation: none !important; } }
+  .texto { position: absolute; left: 6%; top: 12%; max-width: 46%; }
+  .panel { position: absolute; background: rgba(20, 15, 43, .72); backdrop-filter: blur(8px); border: 1px solid rgba(255, 210, 122, .35); border-radius: 1.2em; padding: 1.8em 2.2em; box-shadow: 0 1.2em 3em rgba(0, 0, 0, .35); }
+  .fila { display: flex; gap: 1em; flex-wrap: wrap; }
+  .personaje { position: absolute; filter: drop-shadow(0 .8em 1.2em rgba(0, 0, 0, .45)); }
+  .personaje img { width: 100%; display: block; }
+  .punto { position: absolute; width: 2.6em; height: 2.6em; margin: -1.3em 0 0 -1.3em; border-radius: 50%; border: 0; cursor: pointer; background: radial-gradient(circle, #fff 0 22%, var(--oro) 24% 60%, rgba(232, 163, 61, .25) 62%); box-shadow: 0 0 0 0 rgba(255, 210, 122, .7); animation: latido 1.8s infinite; }
+  @keyframes latido { 70% { box-shadow: 0 0 0 1.4em rgba(255, 210, 122, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 210, 122, 0); } }
+  .nota { position: absolute; width: 26em; font-size: 1em; display: none; }
+  .nota.ver { display: block; }
+  .nota h3 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 2em; margin: 0 0 .25em; color: var(--oro-claro); }
+  .nota p { font-size: 1.3em; margin: 0; }
+  .opciones { display: grid; gap: .8em; margin-top: .4em; }
+  .opcion { text-align: left; font: 600 1.35em "Source Sans 3", Arial, sans-serif; color: var(--papel); background: rgba(255, 246, 232, .1); border: 1px solid rgba(255, 246, 232, .4); border-radius: .8em; padding: .8em 1.1em; cursor: pointer; transition: background .2s; }
+  .opcion:hover { background: rgba(255, 210, 122, .2); }
+  .opcion.bien { background: rgba(120, 220, 160, .3); border-color: #9ef0bf; }
+  .pista { color: var(--oro-claro); min-height: 1.4em; font-size: 1.25em; margin: .8em 0 0; }
+  .fuego { position: absolute; width: 6em; height: 6em; margin: -3em 0 0 -3em; border-radius: 50%; cursor: grab; touch-action: none; background: radial-gradient(circle, #fff7d6 0 15%, #ffcf5a 30%, #ff7a2e 55%, rgba(255, 80, 30, 0) 72%); filter: drop-shadow(0 0 1.2em #ff9a3c); animation: arder .35s infinite alternate; z-index: 5; }
+  @keyframes arder { to { transform: scale(1.08) rotate(8deg); } }
+  .blanco { position: absolute; width: 7em; height: 7em; margin: -3.5em 0 0 -3.5em; border-radius: 50%; border: .2em dashed rgba(191, 239, 255, .8); animation: girar 6s linear infinite; }
+  @keyframes girar { to { transform: rotate(360deg); } }
+  .destello { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  .insignia { width: 15em; height: 15em; }
+  .progreso { position: absolute; right: 2.4%; top: 3%; display: flex; gap: .5em; z-index: 9; }
+  .progreso i { width: .8em; height: .8em; border-radius: 50%; background: rgba(255, 246, 232, .3); }
+  .progreso i.on { background: var(--oro-claro); box-shadow: 0 0 .6em var(--oro); }
+  @media (prefers-reduced-motion: reduce) { .punto, .fuego, .blanco { animation: none; } }
 </style>
 </head>
 <body>
-<main class="escenario" id="escenario" aria-label="Escena: los prados frente al castillo de cristal">
-  <div class="capa" data-prof="0.2"><img src="img/cielo.webp" alt=""></div>
-  <canvas id="estrellas"></canvas>
-  <div class="capa" data-prof="0.45"><img src="img/paisaje.webp" alt=""></div>
-  <div class="capa" data-prof="0.6" id="capa-castillo"><img src="img/castillo.webp" alt="Castillo con base de piedra derruida y agujas góticas de cristal"></div>
-  <div class="capa" data-prof="0.75" id="campo"></div>
-  <canvas id="luciernagas"></canvas>
-  <div class="capa" data-prof="1"><img src="img/cipreses.webp" alt=""></div>
-  <div class="velo"></div>
-  <section class="portada">
-    <h1 id="titulo">El castillo de cristal</h1>
-    <p id="sub">Una aventura inspirada en <em>Reina de sombras</em>, de Sarah J. Maas</p>
-    <button class="boton" id="comenzar">Comenzar la aventura</button>
+<main class="escenario" id="escenario">
+  <div class="progreso" id="progreso" aria-hidden="true"></div>
+
+  <!-- 1. Portada -->
+  <section class="esc" id="e1" aria-label="Portada">
+    <div class="capa" data-prof="0.2"><img src="img/cielo.webp" alt=""></div>
+    <canvas id="estrellas"></canvas>
+    <div class="capa" data-prof="0.45"><img src="img/paisaje.webp" alt=""></div>
+    <div class="capa" data-prof="0.6" id="capa-castillo"><img src="img/castillo.webp" alt="Castillo con base de piedra derruida y agujas de cristal"></div>
+    <div class="capa" data-prof="0.75" id="campo"></div>
+    <canvas id="luciernagas"></canvas>
+    <div class="capa" data-prof="1"><img src="img/cipreses.webp" alt=""></div>
+    <div class="velo"></div>
+    <div class="texto">
+      <h1>El castillo de cristal</h1>
+      <p>Una aventura inspirada en <em>Reina de sombras</em>, de Sarah J. Maas</p>
+      <button class="boton" data-ir="e2">Comenzar la aventura</button>
+    </div>
+  </section>
+
+  <!-- 2. Decisión -->
+  <section class="esc" id="e2" aria-label="Los prados">
+    <img class="fondo" src="img/prado_vacio.webp" alt="Prados al anochecer">
+    <div class="panel" style="left:50%;top:50%;transform:translate(-50%,-50%);width:44em;text-align:center">
+      <h2>Los prados de Adarlan</h2>
+      <p id="t2">Cae la tarde. A lo lejos brilla el castillo de cristal. ¿Por dónde avanzas?</p>
+      <div class="fila" style="justify-content:center" id="caminos">
+        <button class="boton sec" data-camino="Cruzas el bosque de cipreses. Entre los troncos, una figura te observa.">Por el bosque de cipreses</button>
+        <button class="boton sec" data-camino="Sigues el río hasta el puente. Sobre él, alguien te espera.">Por el camino del río</button>
+      </div>
+      <button class="boton" data-ir="e3" id="seguir2" style="display:none;margin:0 auto">Acercarse</button>
+    </div>
+  </section>
+
+  <!-- 3. Encuentro -->
+  <section class="esc" id="e3" aria-label="El encuentro con Aelin">
+    <img class="fondo" src="img/prado_vacio.webp" alt="" style="filter:brightness(.8)">
+    <div class="personaje" id="aelin3" style="left:58%;bottom:-2%;width:22%"><img src="img/aelin.webp" alt="Aelin, de cabello dorado, con fuego en las manos"></div>
+    <div class="panel" style="left:6%;top:18%;width:36em">
+      <h2>Aelin</h2>
+      <p>«Soy Aelin Galathynius, reina de Terrasen. Mi amigo Dorian está atrapado en ese castillo. Sola no puedo entrar. ¿Me ayudas?»</p>
+      <button class="boton" data-ir="e4">Te ayudo</button>
+    </div>
+  </section>
+
+  <!-- 4. Puerta -->
+  <section class="esc" id="e4" aria-label="La puerta del castillo">
+    <img class="fondo" src="img/puerta.webp" alt="Puerta de piedra del castillo, cubierta de musgo" id="puerta">
+    <div class="panel" style="left:5%;top:12%;width:34em">
+      <h2>La puerta del castillo</h2>
+      <p>La puerta solo se abre para quien conoce la verdad. ¿Quién controla el cuerpo de Dorian?</p>
+      <div class="opciones">
+        <button class="opcion" data-ok="1">Un príncipe valg, a través del collar</button>
+        <button class="opcion" data-pista="El rey dio la orden, pero no es quien lo controla.">Su padre, el rey de Adarlan</button>
+        <button class="opcion" data-pista="Busca la respuesta en el collar de piedra negra.">Una bruja del norte</button>
+      </div>
+      <p class="pista" id="pista" aria-live="polite"></p>
+    </div>
+    <div class="destello" id="luz4" style="background:radial-gradient(circle at 45% 72%, #ffe6a0, rgba(255,230,160,0) 60%)"></div>
+  </section>
+
+  <!-- 5. Balcón -->
+  <section class="esc" id="e5" aria-label="El balcón">
+    <img class="fondo" src="img/acercamiento.webp" alt="Aelin y Dorian en el balcón, frente a las agujas de cristal">
+    <button class="punto" style="left:60.5%;top:43%" data-nota="n1" aria-label="El collar de Dorian"></button>
+    <button class="punto" style="left:39%;top:47%" data-nota="n2" aria-label="Aelin"></button>
+    <button class="punto" style="left:62%;top:14%" data-nota="n3" aria-label="El castillo de cristal"></button>
+    <div class="panel nota" id="n1" style="left:64%;top:46%"><h3>El collar</h3><p>Su padre le puso un collar de piedra negra. Por él, un príncipe valg controla su cuerpo. Dorian sigue consciente, atrapado dentro de sí mismo.</p></div>
+    <div class="panel nota" id="n2" style="left:8%;top:22%"><h3>Aelin</h3><p>Antes fue Celaena Sardothien, la asesina más temida de Adarlan. Ahora regresa como reina de Terrasen, con su magia de fuego.</p></div>
+    <div class="panel nota" id="n3" style="left:30%;top:6%"><h3>El castillo</h3><p>Sede del rey de Adarlan. Sus agujas de cristal se alzan sobre una antigua fortaleza de piedra.</p></div>
+    <div class="panel" style="left:4%;bottom:5%;width:30em">
+      <p style="margin-bottom:.8em">Toca los puntos dorados para descubrir la escena.</p>
+      <button class="boton" data-ir="e6" id="ir6" disabled style="opacity:.45">Liberar a Dorian</button>
+    </div>
+  </section>
+
+  <!-- 6. Lucha -->
+  <section class="esc" id="e6" aria-label="La lucha">
+    <img class="fondo" src="img/acercamiento.webp" alt="" style="filter:brightness(.55) saturate(1.2)">
+    <canvas id="chispas"></canvas>
+    <div class="blanco" id="blanco" style="left:60.5%;top:43%"></div>
+    <div class="fuego" id="fuego" style="left:43%;top:62%" role="button" aria-label="Fuego de Aelin: arrástralo hasta el collar"></div>
+    <div class="panel" style="left:4%;top:8%;width:32em">
+      <h2>La lucha</h2>
+      <p id="t6">Arrastra el fuego de Aelin hasta el collar de Dorian.</p>
+    </div>
+    <div class="destello" id="flash6"></div>
+  </section>
+
+  <!-- 7. Liberación y final -->
+  <section class="esc" id="e7" aria-label="La liberación">
+    <img class="fondo" src="img/prado_vacio.webp" alt="Prados al amanecer, sin el castillo">
+    <img class="fondo" src="img/acercamiento.webp" alt="" id="castillo7">
+    <canvas id="cristales"></canvas>
+    <div class="panel" id="final" style="left:50%;top:50%;transform:translate(-50%,-50%);width:46em;text-align:center;opacity:0">
+      <svg class="insignia" viewBox="0 0 200 200" aria-label="Insignia de Guardiana de Terrasen">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE9A8"/><stop offset="1" stop-color="#E8A33D"/></linearGradient></defs>
+        <circle cx="100" cy="100" r="92" fill="#140F2B" stroke="url(#g)" stroke-width="6"/>
+        <circle cx="100" cy="100" r="78" fill="none" stroke="#E8A33D" stroke-width="1.5" stroke-dasharray="3 6"/>
+        <path d="M100 38 C118 62 128 74 120 96 C135 88 140 70 138 60 C156 84 156 118 132 138 C122 148 110 152 100 152 C76 152 56 134 56 108 C56 88 70 76 78 66 C78 80 84 90 92 94 C86 72 90 54 100 38Z" fill="url(#g)"/>
+        <path d="M100 150 L100 96 M88 122 L100 110 L112 122" stroke="#BFEFFF" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <h2>Guardiana de Terrasen</h2>
+      <p>Dorian rompió el collar y el castillo de cristal se quebró. Gracias a ti, Aelin no luchó sola.</p>
+      <p><em>¿Qué harías tú en el lugar de Aelin?</em></p>
+      <button class="boton sec" data-ir="e1">Volver a empezar</button>
+    </div>
   </section>
 </main>
+
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script>
 const esc = document.getElementById('escenario');
 const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const orden = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7'];
+const prog = document.getElementById('progreso');
+orden.forEach(() => prog.appendChild(document.createElement('i')));
+let actual = null;
 
-// ---------- girasoles en los prados: posición en % del escenario, ancho en %, profundidad ----------
-const GIRASOLES = [
-  [1, 95, 9], [9, 98, 10], [17, 93, 7], [4, 86, 5.5], [12, 85, 5], [24, 88, 4.5],
-  [80, 98, 9], [88, 95, 7], [73, 92, 5], [93, 88, 5],
-  [31, 81, 3.2], [37, 79, 2.8], [61, 79, 3], [66, 81, 3.4]
-];
+// ---------- navegación entre escenas, con transición de cámara ----------
+function ir(id) {
+  const sig = document.getElementById(id), ant = actual && document.getElementById(actual);
+  if (ant) gsap.to(ant, { opacity: 0, scale: 1.12, duration: .7, ease: 'power2.in', onComplete: () => { ant.classList.remove('activa'); gsap.set(ant, { scale: 1 }); } });
+  sig.classList.add('activa');
+  gsap.fromTo(sig, { opacity: 0, scale: .94 }, { opacity: 1, scale: 1, duration: .9, delay: ant ? .45 : 0, ease: 'power2.out' });
+  actual = id;
+  [...prog.children].forEach((p, i) => p.classList.toggle('on', i <= orden.indexOf(id)));
+  (entradas[id] || (() => {}))();
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-ir]'); if (b && !b.disabled) ir(b.dataset.ir); });
+
+// ---------- escena 1: girasoles, profundidad, estrellas y luciérnagas ----------
+const GIRASOLES = [[1, 95, 9], [9, 98, 10], [17, 93, 7], [4, 86, 5.5], [12, 85, 5], [24, 88, 4.5], [80, 98, 9], [88, 95, 7], [73, 92, 5], [93, 88, 5], [31, 81, 3.2], [37, 79, 2.8], [61, 79, 3], [66, 81, 3.4]];
 const campo = document.getElementById('campo');
 GIRASOLES.sort((a, b) => a[1] - b[1]).forEach(([x, y, w], i) => {
   const g = document.createElement('div');
-  g.className = 'girasol';
-  g.style.left = x + '%'; g.style.width = w + '%'; g.style.top = (y - w * 1.35 * 16 / 9) + '%';
+  g.className = 'girasol'; g.style.left = x + '%'; g.style.width = w + '%'; g.style.top = (y - w * 1.35 * 16 / 9) + '%';
   g.innerHTML = '<img src="img/girasoles.webp" alt="">';
   if (i % 2) g.firstChild.style.transform = 'scaleX(-1)';
   campo.appendChild(g);
-  if (!reducido) gsap.to(g, { rotation: gsap.utils.random(2.2, 4), duration: gsap.utils.random(1.8, 2.8), ease: 'sine.inOut', yoyo: true, repeat: -1, delay: -Math.random() * 3, transformOrigin: '50% 100%' });
+  if (!reducido) gsap.to(g, { rotation: gsap.utils.random(2.2, 4), duration: gsap.utils.random(1.8, 2.8), ease: 'sine.inOut', yoyo: true, repeat: -1, delay: -Math.random() * 3 });
 });
-
-// ---------- profundidad: las capas se mueven distinto con el mouse ----------
-const capas = [...document.querySelectorAll('.capa')];
+const capas = [...document.querySelectorAll('#e1 .capa')];
 esc.addEventListener('pointermove', e => {
-  const r = esc.getBoundingClientRect();
-  const dx = (e.clientX - r.left) / r.width - .5, dy = (e.clientY - r.top) / r.height - .5;
+  if (actual !== 'e1') return;
+  const r = esc.getBoundingClientRect(), dx = (e.clientX - r.left) / r.width - .5, dy = (e.clientY - r.top) / r.height - .5;
   capas.forEach(c => gsap.to(c, { x: -dx * 30 * c.dataset.prof, y: -dy * 14 * c.dataset.prof, duration: .9, ease: 'power2.out' }));
 });
-
-// ---------- estrellas que titilan y luciérnagas ----------
 function lienzo(id) {
   const c = document.getElementById(id), ctx = c.getContext('2d');
   const ajustar = () => { const r = esc.getBoundingClientRect(); c.width = r.width * devicePixelRatio; c.height = r.height * devicePixelRatio; };
   ajustar(); addEventListener('resize', ajustar);
   return [c, ctx];
 }
-const [ce, xe] = lienzo('estrellas');
+const [ce, xe] = lienzo('estrellas'), [cl, xl] = lienzo('luciernagas');
 const estrellas = Array.from({ length: 60 }, () => ({ x: Math.random(), y: Math.random() * .3, r: Math.random() * 1.4 + .4, f: Math.random() * 6 }));
-const [cl, xl] = lienzo('luciernagas');
 const luces = Array.from({ length: 34 }, () => ({ x: Math.random(), y: .55 + Math.random() * .4, vx: (Math.random() - .5) * .0006, vy: (Math.random() - .5) * .0004, f: Math.random() * 6 }));
-function cuadro(t) {
-  xe.clearRect(0, 0, ce.width, ce.height);
-  estrellas.forEach(s => { xe.globalAlpha = .45 + .55 * Math.abs(Math.sin(t / 900 + s.f)); xe.fillStyle = '#fff6e0'; xe.beginPath(); xe.arc(s.x * ce.width, s.y * ce.height, s.r * devicePixelRatio, 0, 7); xe.fill(); });
-  xl.clearRect(0, 0, cl.width, cl.height);
-  luces.forEach(l => {
-    l.x += l.vx + Math.sin(t / 1300 + l.f) * .0003; l.y += l.vy + Math.cos(t / 1700 + l.f) * .0002;
-    if (l.x < 0 || l.x > 1) l.vx *= -1; if (l.y < .5 || l.y > .98) l.vy *= -1;
-    const a = .25 + .75 * Math.max(0, Math.sin(t / 600 + l.f)), x = l.x * cl.width, y = l.y * cl.height, R = 9 * devicePixelRatio;
-    const g = xl.createRadialGradient(x, y, 0, x, y, R); g.addColorStop(0, `rgba(255,226,140,${a})`); g.addColorStop(1, 'rgba(255,200,90,0)');
-    xl.fillStyle = g; xl.beginPath(); xl.arc(x, y, R, 0, 7); xl.fill();
-  });
-  if (!reducido) requestAnimationFrame(cuadro);
+function brillo(ctx, x, y, R, color, a) { const g = ctx.createRadialGradient(x, y, 0, x, y, R); g.addColorStop(0, color.replace('A', a)); g.addColorStop(1, color.replace('A', 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.fill(); }
+function cuadro1(t) {
+  if (actual === 'e1') {
+    xe.clearRect(0, 0, ce.width, ce.height);
+    estrellas.forEach(s => { xe.globalAlpha = .45 + .55 * Math.abs(Math.sin(t / 900 + s.f)); xe.fillStyle = '#fff6e0'; xe.beginPath(); xe.arc(s.x * ce.width, s.y * ce.height, s.r * devicePixelRatio, 0, 7); xe.fill(); });
+    xe.globalAlpha = 1; xl.clearRect(0, 0, cl.width, cl.height);
+    luces.forEach(l => {
+      l.x += l.vx + Math.sin(t / 1300 + l.f) * .0003; l.y += l.vy + Math.cos(t / 1700 + l.f) * .0002;
+      if (l.x < 0 || l.x > 1) l.vx *= -1; if (l.y < .5 || l.y > .98) l.vy *= -1;
+      brillo(xl, l.x * cl.width, l.y * cl.height, 9 * devicePixelRatio, 'rgba(255,226,140,A)', .25 + .75 * Math.max(0, Math.sin(t / 600 + l.f)));
+    });
+  }
+  requestAnimationFrame(cuadro1);
 }
-requestAnimationFrame(cuadro);
-
-// ---------- entrada de la portada ----------
-gsap.from('.capa', { scale: 1.08, opacity: 0, duration: 1.6, stagger: .12, ease: 'power2.out' });
-gsap.from('.girasol', { y: '30%', opacity: 0, duration: 1.1, stagger: .05, delay: .6, ease: 'back.out(1.6)' });
-gsap.from(['#titulo', '#sub', '#comenzar'], { y: 24, opacity: 0, duration: .9, stagger: .18, delay: 1.1, ease: 'power3.out' });
+requestAnimationFrame(cuadro1);
 gsap.fromTo('#capa-castillo img', { filter: 'brightness(1) drop-shadow(0 0 0px rgba(220,200,255,0))' }, { filter: 'brightness(1.1) drop-shadow(0 0 14px rgba(220,200,255,.6))', duration: 2.4, yoyo: true, repeat: -1, ease: 'sine.inOut' });
 
-document.getElementById('comenzar').addEventListener('click', () => {
-  // la escena 2 se agrega en la siguiente etapa
-  gsap.to('#capa-castillo', { scale: 1.6, xPercent: -18, yPercent: 10, duration: 1.4, ease: 'power2.inOut' });
-  gsap.to('.portada', { opacity: 0, x: -40, duration: .6 });
+const entradas = {
+  e1() {
+    gsap.from('#e1 .capa', { scale: 1.08, opacity: 0, duration: 1.4, stagger: .1, ease: 'power2.out' });
+    gsap.from('.girasol', { y: '30%', opacity: 0, duration: 1, stagger: .04, delay: .5, ease: 'back.out(1.6)' });
+    gsap.from('#e1 .texto > *', { y: 24, opacity: 0, duration: .9, stagger: .18, delay: .9, ease: 'power3.out' });
+  },
+  e2() {
+    document.getElementById('caminos').style.display = 'flex'; document.getElementById('seguir2').style.display = 'none';
+    document.getElementById('t2').textContent = 'Cae la tarde. A lo lejos brilla el castillo de cristal. ¿Por dónde avanzas?';
+    gsap.from('#e2 .panel', { y: 40, opacity: 0, duration: .9, delay: .5, ease: 'power3.out' });
+  },
+  e3() {
+    gsap.from('#aelin3', { x: '40%', opacity: 0, duration: 1.2, delay: .5, ease: 'power3.out' });
+    gsap.from('#e3 .panel', { y: 30, opacity: 0, duration: .8, delay: 1.2 });
+  },
+  e4() {
+    document.querySelectorAll('.opcion').forEach(o => o.classList.remove('bien')); document.getElementById('pista').textContent = '';
+    gsap.fromTo('#puerta', { scale: 1.15 }, { scale: 1, duration: 2.5, ease: 'power2.out' });
+    gsap.from('#e4 .panel', { x: -40, opacity: 0, duration: .8, delay: .6 });
+  },
+  e5() {
+    visto.clear(); actualizarIr6();
+    gsap.fromTo('#e5 .fondo', { scale: 1.25, transformOrigin: '55% 50%' }, { scale: 1, duration: 2.2, ease: 'power2.out' });
+    gsap.from('.punto', { scale: 0, duration: .6, stagger: .2, delay: 1.4, ease: 'back.out(2)' });
+  },
+  e6() { reiniciarFuego(); gsap.from('#e6 .panel', { y: -30, opacity: 0, duration: .8, delay: .5 }); },
+  e7() { quiebre(); }
+};
+
+// ---------- escena 2: decisión ----------
+document.querySelectorAll('[data-camino]').forEach(b => b.addEventListener('click', () => {
+  document.getElementById('t2').textContent = b.dataset.camino;
+  document.getElementById('caminos').style.display = 'none';
+  const s = document.getElementById('seguir2'); s.style.display = 'inline-block';
+  gsap.from(s, { scale: .8, opacity: 0, duration: .5, ease: 'back.out(2)' });
+}));
+
+// ---------- escena 4: pregunta ----------
+document.querySelectorAll('.opcion').forEach(o => o.addEventListener('click', () => {
+  if (o.dataset.ok) {
+    o.classList.add('bien'); document.getElementById('pista').textContent = '¡Correcto! La puerta se abre.';
+    gsap.to('#luz4', { opacity: 1, duration: .9, delay: .3, onComplete: () => ir('e5') });
+    gsap.set('#luz4', { opacity: 0, delay: 2.5 });
+  } else {
+    document.getElementById('pista').textContent = 'Pista: ' + o.dataset.pista;
+    gsap.fromTo(o, { x: -8 }, { x: 0, duration: .4, ease: 'elastic.out(1, .3)' });
+  }
+}));
+
+// ---------- escena 5: puntos ----------
+const visto = new Set();
+function actualizarIr6() { const b = document.getElementById('ir6'); const ok = visto.size >= 3; b.disabled = !ok; b.style.opacity = ok ? 1 : .45; }
+document.querySelectorAll('.punto').forEach(p => p.addEventListener('click', () => {
+  document.querySelectorAll('.nota').forEach(n => n.classList.remove('ver'));
+  const n = document.getElementById(p.dataset.nota); n.classList.add('ver');
+  gsap.from(n, { y: 12, opacity: 0, duration: .4 });
+  visto.add(p.dataset.nota); actualizarIr6();
+}));
+
+// ---------- escena 6: arrastrar el fuego al collar ----------
+const fuego = document.getElementById('fuego'), blanco = document.getElementById('blanco');
+const [cc, xc] = lienzo('chispas'); let chispas = [];
+function reiniciarFuego() { gsap.set(fuego, { left: '43%', top: '62%', scale: 1, opacity: 1 }); fuego.style.display = 'block'; blanco.style.display = 'block'; document.getElementById('t6').textContent = 'Arrastra el fuego de Aelin hasta el collar de Dorian.'; }
+let arrastrando = false;
+fuego.addEventListener('pointerdown', e => { arrastrando = true; fuego.setPointerCapture(e.pointerId); fuego.style.cursor = 'grabbing'; });
+fuego.addEventListener('pointermove', e => {
+  if (!arrastrando) return;
+  const r = esc.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  fuego.style.left = x * 100 + '%'; fuego.style.top = y * 100 + '%';
+  for (let i = 0; i < 3; i++) chispas.push({ x, y, vx: (Math.random() - .5) * .004, vy: -Math.random() * .004, v: 1 });
 });
+fuego.addEventListener('pointerup', () => {
+  arrastrando = false; fuego.style.cursor = 'grab';
+  const f = fuego.getBoundingClientRect(), b = blanco.getBoundingClientRect();
+  const d = Math.hypot(f.x + f.width / 2 - b.x - b.width / 2, f.y + f.height / 2 - b.y - b.height / 2);
+  if (d < b.width) {
+    document.getElementById('t6').textContent = '¡El collar se rompe!';
+    blanco.style.display = 'none';
+    gsap.to(fuego, { scale: 3, opacity: 0, duration: .5 });
+    for (let i = 0; i < 90; i++) chispas.push({ x: .605, y: .43, vx: (Math.random() - .5) * .02, vy: (Math.random() - .5) * .02, v: 1, hielo: Math.random() < .5 });
+    gsap.timeline().to('#flash6', { opacity: .9, duration: .15 }).to('#flash6', { opacity: 0, duration: .8 }).call(() => ir('e7'), null, '+=.6');
+  } else {
+    document.getElementById('t6').textContent = 'Casi. Lleva el fuego justo al círculo del collar.';
+    gsap.to(fuego, { left: '43%', top: '62%', duration: .6, ease: 'power2.out' });
+  }
+});
+function cuadro6() {
+  if (actual === 'e6') {
+    xc.clearRect(0, 0, cc.width, cc.height);
+    chispas = chispas.filter(s => (s.v -= .02) > 0);
+    chispas.forEach(s => { s.x += s.vx; s.y += s.vy; s.vy += .0002; brillo(xc, s.x * cc.width, s.y * cc.height, 7 * devicePixelRatio * s.v, s.hielo ? 'rgba(191,239,255,A)' : 'rgba(255,170,70,A)', s.v); });
+  }
+  requestAnimationFrame(cuadro6);
+}
+requestAnimationFrame(cuadro6);
+
+// ---------- escena 7: el castillo se quiebra y aparece la insignia ----------
+const [cq, xq] = lienzo('cristales'); let trozos = [];
+function quiebre() {
+  gsap.set('#castillo7', { opacity: 1, scale: 1, filter: 'brightness(1)' }); gsap.set('#final', { opacity: 0 });
+  trozos = Array.from({ length: 140 }, () => ({ x: .35 + Math.random() * .5, y: Math.random() * .6, vx: (Math.random() - .5) * .006, vy: -Math.random() * .004, r: Math.random() * 6.3, vr: (Math.random() - .5) * .2, s: 4 + Math.random() * 14, t: 0 }));
+  gsap.timeline()
+    .to('#castillo7', { x: '+=8', duration: .05, repeat: 9, yoyo: true })
+    .to('#castillo7', { filter: 'brightness(1.8)', duration: .4 })
+    .to('#castillo7', { opacity: 0, scale: 1.08, duration: 1.2 })
+    .to('#final', { opacity: 1, duration: 1 }, '-=.3')
+    .from('.insignia', { scale: .3, rotation: -40, duration: 1.2, ease: 'back.out(1.8)' }, '<');
+}
+function cuadro7() {
+  if (actual === 'e7') {
+    xq.clearRect(0, 0, cq.width, cq.height);
+    trozos.forEach(p => {
+      p.t++; if (p.t < 25) return;
+      p.x += p.vx; p.y += p.vy; p.vy += .0004; p.r += p.vr;
+      const x = p.x * cq.width, y = p.y * cq.height, s = p.s * devicePixelRatio;
+      xq.save(); xq.translate(x, y); xq.rotate(p.r); xq.globalAlpha = Math.max(0, 1 - p.y);
+      xq.fillStyle = 'rgba(205,240,255,.85)'; xq.strokeStyle = 'rgba(255,255,255,.95)';
+      xq.beginPath(); xq.moveTo(0, -s); xq.lineTo(s * .55, s * .2); xq.lineTo(-s * .3, s * .7); xq.closePath(); xq.fill(); xq.stroke(); xq.restore();
+    });
+  }
+  requestAnimationFrame(cuadro7);
+}
+requestAnimationFrame(cuadro7);
+
+ir('e1');
 </script>
 </body>
 </html>
