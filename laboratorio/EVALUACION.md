@@ -22,21 +22,17 @@ Para hacer una aventura nueva hay que copiar el archivo entero y reescribirlo.
 | 7 | Tres animaciones (`requestAnimationFrame`) corren siempre, aunque su escena no esté activa | Gasto de batería innecesario |
 | 8 | `img/dorian.webp` no se usa | 52 KB de más |
 
-## Propuesta de mejora
+## Plan (versión económica, 3 pasos)
 
-1. **Separar motor y contenido**
-   - `motor/motor.css` y `motor/motor.js`: navegación, transiciones, progreso,
-     y piezas reutilizables (decisión, pregunta, puntos, arrastrar, final).
-   - Cada aventura queda solo con su HTML de escenas y sus imágenes.
-   - Resultado: una aventura nueva se arma con bloques, sin copiar código.
-2. **Hacerlo legible en celular**: tamaño de letra con mínimo, y paneles que en
-   vertical pasan a la parte inferior de la pantalla.
-3. **Accesibilidad**: arrastrar también con teclado (flechas + Enter) o con un toque.
-4. **Rendimiento**: animaciones que solo corren en su escena.
-5. **Plantilla**: carpeta `plantilla/` con una aventura mínima lista para duplicar.
+Paso 0 hecho: `CLAUDE.md` + `pruebas/recorrido.cjs`.
 
-## Cómo probarlo
+1. **Celular** (problemas 2, 3, 6): letra con mínimo legible, paneles abajo en
+   vertical, fuego y blanco más grandes. Meta: la prueba pasa en iPhone.
+2. **Motor** (problemas 1, 4, 5, 7, 8) en una sola pasada: `laboratorio/motor/motor.css`
+   y `motor.js` con piezas por atributos (`data-ir`, decisión, pregunta, puntos,
+   arrastrar con teclado), un solo ciclo de animación por escena activa, sin estilos
+   en línea. `castillo-v2` pasa a usar el motor. Meta: la prueba sigue pasando.
+3. **Plantilla** `laboratorio/plantilla/` + revisión final + pull request.
 
-- Se aplica todo en `laboratorio/castillo-v2/` y se compara con el original
-  (en computador, celular y dentro de Genially).
-- Si funciona igual o mejor, se lleva al proyecto principal.
+Reglas: un commit por paso, prueba automática antes de cada push, sin agentes en
+paralelo, capturas solo al final.
