@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El castillo de cristal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+  :root { --oro: #E8A33D; --oro-claro: #FFD27A; --tinta: #140F2B; --papel: #FFF6E8; }
+  html, body { margin: 0; height: 100%; background: #0d0a1c; overflow: hidden; }
+  body { font-family: "Source Sans 3", Arial, sans-serif; color: var(--papel); display: grid; place-items: center; }
+  /* escenario 16:9 que se ajusta al marco de Genially */
+  .escenario { position: relative; width: min(100vw, 177.78vh); aspect-ratio: 16 / 9; overflow: hidden; }
+  .capa { position: absolute; inset: -3%; background-size: cover; background-position: center; will-change: transform; }
+  .capa img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .girasol { position: absolute; transform-origin: 50% 100%; will-change: transform; }
+  .girasol img { width: 100%; display: block; filter: drop-shadow(0 .4vw .6vw rgba(20, 15, 43, .35)); }
+  .portada { position: absolute; left: 7%; top: 13%; max-width: 44%; }
+  .portada h1 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 600; font-size: clamp(28px, 6.2vw, 112px); line-height: .98; margin: 0 0 .35em; text-shadow: 0 .05em .35em rgba(20, 15, 43, .55); }
+  .portada p { font-size: clamp(12px, 1.35vw, 24px); margin: 0 0 1.6em; opacity: .92; text-shadow: 0 1px 8px rgba(20, 15, 43, .6); }
+  .portada p em { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.15em; }
+  .boton { font: 600 clamp(12px, 1.3vw, 22px) "Source Sans 3", Arial, sans-serif; color: var(--tinta); background: linear-gradient(180deg, var(--oro-claro), var(--oro)); border: 0; border-radius: 999px; padding: .75em 1.8em; cursor: pointer; box-shadow: 0 0 0 .18em rgba(255, 210, 122, .25), 0 .5em 1.4em rgba(232, 163, 61, .45); transition: transform .2s; }
+  .boton:hover { transform: translateY(-2px) scale(1.04); }
+  .boton:focus-visible { outline: 3px solid var(--papel); outline-offset: 3px; }
+  .velo { position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 40%, transparent 40%, rgba(13, 10, 28, .45)); pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { .girasol { animation: none !important; } }
+</style>
+</head>
+<body>
+<main class="escenario" id="escenario" aria-label="Escena: los prados frente al castillo de cristal">
+  <div class="capa" data-prof="0.2"><img src="img/cielo.webp" alt=""></div>
+  <canvas id="estrellas"></canvas>
+  <div class="capa" data-prof="0.45"><img src="img/paisaje.webp" alt=""></div>
+  <div class="capa" data-prof="0.6" id="capa-castillo"><img src="img/castillo.webp" alt="Castillo con base de piedra derruida y agujas góticas de cristal"></div>
+  <div class="capa" data-prof="0.75" id="campo"></div>
+  <canvas id="luciernagas"></canvas>
+  <div class="capa" data-prof="1"><img src="img/cipreses.webp" alt=""></div>
+  <div class="velo"></div>
+  <section class="portada">
+    <h1 id="titulo">El castillo de cristal</h1>
+    <p id="sub">Una aventura inspirada en <em>Reina de sombras</em>, de Sarah J. Maas</p>
+    <button class="boton" id="comenzar">Comenzar la aventura</button>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+const esc = document.getElementById('escenario');
+const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---------- girasoles en los prados: posición en % del escenario, ancho en %, profundidad ----------
+const GIRASOLES = [
+  [1, 95, 9], [9, 98, 10], [17, 93, 7], [4, 86, 5.5], [12, 85, 5], [24, 88, 4.5],
+  [80, 98, 9], [88, 95, 7], [73, 92, 5], [93, 88, 5],
+  [31, 81, 3.2], [37, 79, 2.8], [61, 79, 3], [66, 81, 3.4]
+];
+const campo = document.getElementById('campo');
+GIRASOLES.sort((a, b) => a[1] - b[1]).forEach(([x, y, w], i) => {
+  const g = document.createElement('div');
+  g.className = 'girasol';
+  g.style.left = x + '%'; g.style.width = w + '%'; g.style.top = (y - w * 1.35 * 16 / 9) + '%';
+  g.innerHTML = '<img src="img/girasoles.webp" alt="">';
+  if (i % 2) g.firstChild.style.transform = 'scaleX(-1)';
+  campo.appendChild(g);
+  if (!reducido) gsap.to(g, { rotation: gsap.utils.random(2.2, 4), duration: gsap.utils.random(1.8, 2.8), ease: 'sine.inOut', yoyo: true, repeat: -1, delay: -Math.random() * 3, transformOrigin: '50% 100%' });
+});
+
+// ---------- profundidad: las capas se mueven distinto con el mouse ----------
+const capas = [...document.querySelectorAll('.capa')];
+esc.addEventListener('pointermove', e => {
+  const r = esc.getBoundingClientRect();
+  const dx = (e.clientX - r.left) / r.width - .5, dy = (e.clientY - r.top) / r.height - .5;
+  capas.forEach(c => gsap.to(c, { x: -dx * 30 * c.dataset.prof, y: -dy * 14 * c.dataset.prof, duration: .9, ease: 'power2.out' }));
+});
+
+// ---------- estrellas que titilan y luciérnagas ----------
+function lienzo(id) {
+  const c = document.getElementById(id), ctx = c.getContext('2d');
+  const ajustar = () => { const r = esc.getBoundingClientRect(); c.width = r.width * devicePixelRatio; c.height = r.height * devicePixelRatio; };
+  ajustar(); addEventListener('resize', ajustar);
+  return [c, ctx];
+}
+const [ce, xe] = lienzo('estrellas');
+const estrellas = Array.from({ length: 60 }, () => ({ x: Math.random(), y: Math.random() * .3, r: Math.random() * 1.4 + .4, f: Math.random() * 6 }));
+const [cl, xl] = lienzo('luciernagas');
+const luces = Array.from({ length: 34 }, () => ({ x: Math.random(), y: .55 + Math.random() * .4, vx: (Math.random() - .5) * .0006, vy: (Math.random() - .5) * .0004, f: Math.random() * 6 }));
+function cuadro(t) {
+  xe.clearRect(0, 0, ce.width, ce.height);
+  estrellas.forEach(s => { xe.globalAlpha = .45 + .55 * Math.abs(Math.sin(t / 900 + s.f)); xe.fillStyle = '#fff6e0'; xe.beginPath(); xe.arc(s.x * ce.width, s.y * ce.height, s.r * devicePixelRatio, 0, 7); xe.fill(); });
+  xl.clearRect(0, 0, cl.width, cl.height);
+  luces.forEach(l => {
+    l.x += l.vx + Math.sin(t / 1300 + l.f) * .0003; l.y += l.vy + Math.cos(t / 1700 + l.f) * .0002;
+    if (l.x < 0 || l.x > 1) l.vx *= -1; if (l.y < .5 || l.y > .98) l.vy *= -1;
+    const a = .25 + .75 * Math.max(0, Math.sin(t / 600 + l.f)), x = l.x * cl.width, y = l.y * cl.height, R = 9 * devicePixelRatio;
+    const g = xl.createRadialGradient(x, y, 0, x, y, R); g.addColorStop(0, `rgba(255,226,140,${a})`); g.addColorStop(1, 'rgba(255,200,90,0)');
+    xl.fillStyle = g; xl.beginPath(); xl.arc(x, y, R, 0, 7); xl.fill();
+  });
+  if (!reducido) requestAnimationFrame(cuadro);
+}
+requestAnimationFrame(cuadro);
+
+// ---------- entrada de la portada ----------
+gsap.from('.capa', { scale: 1.08, opacity: 0, duration: 1.6, stagger: .12, ease: 'power2.out' });
+gsap.from('.girasol', { y: '30%', opacity: 0, duration: 1.1, stagger: .05, delay: .6, ease: 'back.out(1.6)' });
+gsap.from(['#titulo', '#sub', '#comenzar'], { y: 24, opacity: 0, duration: .9, stagger: .18, delay: 1.1, ease: 'power3.out' });
+gsap.fromTo('#capa-castillo img', { filter: 'brightness(1) drop-shadow(0 0 0px rgba(220,200,255,0))' }, { filter: 'brightness(1.1) drop-shadow(0 0 14px rgba(220,200,255,.6))', duration: 2.4, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+
+document.getElementById('comenzar').addEventListener('click', () => {
+  // la escena 2 se agrega en la siguiente etapa
+  gsap.to('#capa-castillo', { scale: 1.6, xPercent: -18, yPercent: 10, duration: 1.4, ease: 'power2.inOut' });
+  gsap.to('.portada', { opacity: 0, x: -40, duration: .6 });
+});
+</script>
+</body>
+</html>
